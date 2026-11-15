@@ -58,7 +58,7 @@ UserProfile + songs.csv → score each song → sort by score → top k + reason
 
 `data/songs.csv` was expanded from 10 to **20 songs** (17 genres, 16 moods). The new songs add genres and moods that were missing, such as metal, classical, folk, sad and angry, and include low-valence (dark) songs.
 
-`src/main.py` runs two profiles. The default is an upbeat **pop/happy** listener:
+`src/main.py` runs seven profiles (see **Stress Test Results**). The default is an upbeat **pop/happy** listener:
 
 ```python
 {"favorite_genre": "pop", "favorite_mood": "happy", "target_energy": 0.80, "likes_acoustic": False}
@@ -80,6 +80,288 @@ Expected top 3 for lofi/chill: **Library Rain** (4.38), **Midnight Coding** (4.3
 - **No happy-vs-dark signal.** Valence isn't scored, so for a high-energy user, angry metal and festive Latin music score about the same.
 - **Energy dominates the numeric score.** Energy, tempo, danceability and acousticness are highly correlated in this dataset, so the system mostly sees one dimension: calm vs intense.
 - **Small, hand-made catalog.** 20 songs with made-up values reflect the dataset author's judgment about each genre's "typical" sound, not real listening data.
+
+---
+
+## Stress Test Results
+
+`src/main.py` runs seven profiles: three core listener types and four adversarial or edge-case profiles designed to trick the scoring logic. The output for each profile is below, followed by what it shows.
+
+### High-Energy Pop
+
+```
+================================================================
+Profile: High-Energy Pop
+  genre=pop  mood=happy  energy=0.80  acoustic=False
+================================================================
+1. Sunrise City — Neon Echo
+   Score: 4.39 / 4.50   (pop, happy)
+     • genre match: pop (+2.0)
+     • mood match: happy (+1.0)
+     • energy 0.82 vs target 0.80 (+0.98)
+     • non-acoustic fit (+0.41)
+
+2. Gym Hero — Max Pulse
+   Score: 3.35 / 4.50   (pop, intense)
+     • genre match: pop (+2.0)
+     • energy 0.93 vs target 0.80 (+0.87)
+     • non-acoustic fit (+0.47)
+
+3. Rooftop Lights — Indigo Parade
+   Score: 2.29 / 4.50   (indie pop, happy)
+     • mood match: happy (+1.0)
+     • energy 0.76 vs target 0.80 (+0.96)
+     • non-acoustic fit (+0.33)
+
+4. Concrete Crown — Mic Atlas
+   Score: 1.44 / 4.50   (hip hop, confident)
+     • energy 0.78 vs target 0.80 (+0.98)
+     • non-acoustic fit (+0.46)
+
+5. Storm Runner — Voltline
+   Score: 1.34 / 4.50   (rock, intense)
+     • energy 0.91 vs target 0.80 (+0.89)
+     • non-acoustic fit (+0.45)
+```
+
+Works as expected. Sunrise City is the only pop + happy song. Gym Hero (pop, *intense*) beats Rooftop Lights (indie pop, *happy*) because genre (+2.0) outweighs mood (+1.0).
+
+### Chill Lofi
+
+```
+================================================================
+Profile: Chill Lofi
+  genre=lofi  mood=chill  energy=0.40  acoustic=True
+================================================================
+1. Library Rain — Paper Lanterns
+   Score: 4.38 / 4.50   (lofi, chill)
+     • genre match: lofi (+2.0)
+     • mood match: chill (+1.0)
+     • energy 0.35 vs target 0.40 (+0.95)
+     • acoustic fit (+0.43)
+
+2. Midnight Coding — LoRoom
+   Score: 4.33 / 4.50   (lofi, chill)
+     • genre match: lofi (+2.0)
+     • mood match: chill (+1.0)
+     • energy 0.42 vs target 0.40 (+0.98)
+     • acoustic fit (+0.35)
+
+3. Focus Flow — LoRoom
+   Score: 3.39 / 4.50   (lofi, focused)
+     • genre match: lofi (+2.0)
+     • energy 0.40 vs target 0.40 (+1.00)
+     • acoustic fit (+0.39)
+
+4. Spacewalk Thoughts — Orbit Bloom
+   Score: 2.34 / 4.50   (ambient, chill)
+     • mood match: chill (+1.0)
+     • energy 0.28 vs target 0.40 (+0.88)
+     • acoustic fit (+0.46)
+
+5. Coffee Shop Stories — Slow Stereo
+   Score: 1.42 / 4.50   (jazz, relaxed)
+     • energy 0.37 vs target 0.40 (+0.97)
+     • acoustic fit (+0.45)
+```
+
+Works as expected. All three lofi songs fill the top 3. Spacewalk Thoughts (ambient, chill) is the best non-lofi pick thanks to its mood match.
+
+### Deep Intense Rock
+
+```
+================================================================
+Profile: Deep Intense Rock
+  genre=rock  mood=intense  energy=0.90  acoustic=False
+================================================================
+1. Storm Runner — Voltline
+   Score: 4.44 / 4.50   (rock, intense)
+     • genre match: rock (+2.0)
+     • mood match: intense (+1.0)
+     • energy 0.91 vs target 0.90 (+0.99)
+     • non-acoustic fit (+0.45)
+
+2. Gym Hero — Max Pulse
+   Score: 2.44 / 4.50   (pop, intense)
+     • mood match: intense (+1.0)
+     • energy 0.93 vs target 0.90 (+0.97)
+     • non-acoustic fit (+0.47)
+
+3. Laser Rush — DJ Kinetic
+   Score: 1.43 / 4.50   (edm, energetic)
+     • energy 0.95 vs target 0.90 (+0.95)
+     • non-acoustic fit (+0.48)
+
+4. Iron Furnace — Grave Signal
+   Score: 1.42 / 4.50   (metal, angry)
+     • energy 0.97 vs target 0.90 (+0.93)
+     • non-acoustic fit (+0.48)
+
+5. Fuego en la Pista — Los Caminantes
+   Score: 1.36 / 4.50   (latin, festive)
+     • energy 0.86 vs target 0.90 (+0.96)
+     • non-acoustic fit (+0.40)
+```
+
+#1 is clearly right, but after the single rock song the list is effectively a tie: ranks 3–5 (EDM, metal, Latin) are within 0.07 of each other and are separated only by energy. A festive Latin song ranks right next to angry metal, because nothing in the score measures happy vs dark.
+
+### EDGE: Sad but Hyped
+
+```
+================================================================
+Profile: EDGE: Sad but Hyped
+  genre=edm  mood=sad  energy=0.90  acoustic=False
+================================================================
+1. Laser Rush — DJ Kinetic
+   Score: 3.43 / 4.50   (edm, energetic)
+     • genre match: edm (+2.0)
+     • energy 0.95 vs target 0.90 (+0.95)
+     • non-acoustic fit (+0.48)
+
+2. Gym Hero — Max Pulse
+   Score: 1.44 / 4.50   (pop, intense)
+     • energy 0.93 vs target 0.90 (+0.97)
+     • non-acoustic fit (+0.47)
+
+3. Storm Runner — Voltline
+   Score: 1.44 / 4.50   (rock, intense)
+     • energy 0.91 vs target 0.90 (+0.99)
+     • non-acoustic fit (+0.45)
+
+4. Iron Furnace — Grave Signal
+   Score: 1.42 / 4.50   (metal, angry)
+     • energy 0.97 vs target 0.90 (+0.93)
+     • non-acoustic fit (+0.48)
+
+5. Empty Train Station — Hollow Pines
+   Score: 1.39 / 4.50   (folk, sad)
+     • mood match: sad (+1.0)
+     • energy 0.24 vs target 0.90 (+0.34)
+     • non-acoustic fit (+0.05)
+```
+
+**The conflict is resolved in favor of energy.** The only sad song in the catalog (Empty Train Station) barely makes #5, because its low energy costs it more than the mood match earns. The other picks are intense or upbeat songs; Gym Hero is actually a cheerful track (valence 0.77). Valence isn't scored, so the system has no way to find "energetic *and* sad" music.
+
+### EDGE: Acoustic Headbanger
+
+```
+================================================================
+Profile: EDGE: Acoustic Headbanger
+  genre=metal  mood=angry  energy=0.95  acoustic=True
+================================================================
+1. Iron Furnace — Grave Signal
+   Score: 4.00 / 4.50   (metal, angry)
+     • genre match: metal (+2.0)
+     • mood match: angry (+1.0)
+     • energy 0.97 vs target 0.95 (+0.98)
+     • acoustic fit (+0.01)
+
+2. Laser Rush — DJ Kinetic
+   Score: 1.02 / 4.50   (edm, energetic)
+     • energy 0.95 vs target 0.95 (+1.00)
+     • acoustic fit (+0.02)
+
+3. Storm Runner — Voltline
+   Score: 1.01 / 4.50   (rock, intense)
+     • energy 0.91 vs target 0.95 (+0.96)
+     • acoustic fit (+0.05)
+
+4. Fuego en la Pista — Los Caminantes
+   Score: 1.01 / 4.50   (latin, festive)
+     • energy 0.86 vs target 0.95 (+0.91)
+     • acoustic fit (+0.10)
+
+5. Gym Hero — Max Pulse
+   Score: 1.01 / 4.50   (pop, intense)
+     • energy 0.93 vs target 0.95 (+0.98)
+     • acoustic fit (+0.03)
+```
+
+**The acoustic preference has almost no effect.** High-energy songs are never acoustic in this catalog, so the acoustic bonus is 0.01–0.10 for every top result. Ranks 2–5 are all 1.01–1.02, so their order is decided by tiny rounding differences and CSV order, not by real preference.
+
+### EDGE: Ghost Genre
+
+```
+================================================================
+Profile: EDGE: Ghost Genre
+  genre=k-pop  mood=euphoric  energy=0.50  acoustic=False
+================================================================
+1. Velvet After Hours — Sienna Rae
+   Score: 1.26 / 4.50   (r&b, romantic)
+     • energy 0.55 vs target 0.50 (+0.95)
+     • non-acoustic fit (+0.31)
+
+2. Concrete Crown — Mic Atlas
+   Score: 1.18 / 4.50   (hip hop, confident)
+     • energy 0.78 vs target 0.50 (+0.72)
+     • non-acoustic fit (+0.46)
+
+3. Island Breeze Riddim — Kofi Sunrise
+   Score: 1.18 / 4.50   (reggae, uplifting)
+     • energy 0.60 vs target 0.50 (+0.90)
+     • non-acoustic fit (+0.28)
+
+4. Night Drive Loop — Neon Echo
+   Score: 1.14 / 4.50   (synthwave, moody)
+     • energy 0.75 vs target 0.50 (+0.75)
+     • non-acoustic fit (+0.39)
+
+5. Dusty Porch Swing — Willow Creek Band
+   Score: 1.11 / 4.50   (country, nostalgic)
+     • energy 0.52 vs target 0.50 (+0.98)
+     • non-acoustic fit (+0.13)
+```
+
+**No error and no warning.** When the genre and mood don't exist in the catalog, the system quietly falls back to ranking by energy alone. It still presents 5 "recommendations", but the best score is only 1.26 / 4.50, and the user isn't told that nothing really matched.
+
+### EDGE: Out-of-Range Energy
+
+```
+================================================================
+Profile: EDGE: Out-of-Range Energy
+  genre=classical  mood=peaceful  energy=1.50  acoustic=True
+================================================================
+1. Moonlit Sonata No. 2 — Clara Voss
+   Score: 3.16 / 4.50   (classical, peaceful)
+     • genre match: classical (+2.0)
+     • mood match: peaceful (+1.0)
+     • energy 0.18 vs target 1.50 (+-0.32)
+     • acoustic fit (+0.48)
+
+2. Iron Furnace — Grave Signal
+   Score: 0.48 / 4.50   (metal, angry)
+     • energy 0.97 vs target 1.50 (+0.47)
+     • acoustic fit (+0.01)
+
+3. Laser Rush — DJ Kinetic
+   Score: 0.47 / 4.50   (edm, energetic)
+     • energy 0.95 vs target 1.50 (+0.45)
+     • acoustic fit (+0.02)
+
+4. Storm Runner — Voltline
+   Score: 0.46 / 4.50   (rock, intense)
+     • energy 0.91 vs target 1.50 (+0.41)
+     • acoustic fit (+0.05)
+
+5. Fuego en la Pista — Los Caminantes
+   Score: 0.46 / 4.50   (latin, festive)
+     • energy 0.86 vs target 1.50 (+0.36)
+     • acoustic fit (+0.10)
+```
+
+**Bug found: negative points.** A target energy of 1.5 is outside the valid 0–1 range, but it isn't rejected. The energy rule then gives Moonlit Sonata **−0.32** points (shown as `+-0.32`). The genre and mood matches still keep it at #1, but the input should be validated or clamped to 0–1.
+
+### Summary of findings
+
+| Profile | What it tests | Result |
+|---|---|---|
+| High-Energy Pop | Normal use | ✅ Sensible; genre bias visible at #2/#3 |
+| Chill Lofi | Normal use | ✅ Sensible |
+| Deep Intense Rock | Normal use | ⚠️ Correct #1, near-ties after it |
+| Sad but Hyped | Conflicting mood vs energy | ⚠️ Energy wins; the sad song barely makes the list |
+| Acoustic Headbanger | Conflicting acoustic vs energy | ⚠️ Acoustic preference is ignored in practice |
+| Ghost Genre | Genre/mood not in catalog | ⚠️ Silent fallback to energy only |
+| Out-of-Range Energy | Invalid input | ❌ Negative points; input isn't validated |
 
 ---
 
@@ -126,7 +408,7 @@ Output of `python -m src.main` for the default **pop/happy** profile:
 Loaded songs: 20
 
 ================================================================
-Profile: Pop / Happy
+Profile: High-Energy Pop
   genre=pop  mood=happy  energy=0.80  acoustic=False
 ================================================================
 1. Sunrise City — Neon Echo
@@ -167,11 +449,32 @@ Profile: Pop / Happy
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+### Experiment 1: Weight shift (energy ×2, genre ×½)
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+**Change:** in `src/recommender.py`, `GENRE_WEIGHT` went from 2.0 to **1.0** and `ENERGY_WEIGHT` went from 1.0 to **2.0**. Mood (1.0) and acoustic (0.5) stayed the same.
+
+**Is the math still valid?** Yes. The maximum score is still 1.0 + 1.0 + 2.0 + 0.5 = **4.5**, and for valid inputs (energy 0–1) every score stays between 0 and 4.5. The only exception is the existing out-of-range bug: with energy doubled, a target of 1.5 now produces **−0.64** energy points instead of −0.32.
+
+**Top 5 before → after:**
+
+| Profile | Baseline (genre 2.0, energy 1.0) | Experiment (genre 1.0, energy 2.0) |
+|---|---|---|
+| High-Energy Pop | Sunrise City, **Gym Hero, Rooftop Lights**, Concrete Crown, Storm Runner | Sunrise City, **Rooftop Lights, Gym Hero**, Concrete Crown, *Night Drive Loop* |
+| Chill Lofi | Library Rain, Midnight Coding, Focus Flow, Spacewalk Thoughts, Coffee Shop Stories | *(same order)* |
+| Deep Intense Rock | Storm Runner, Gym Hero, Laser Rush, Iron Furnace, Fuego en la Pista | *(same order)*; Storm Runner's lead over #2 shrank from 2.00 to 1.01 |
+| Sad but Hyped | Laser Rush, Gym Hero, Storm Runner, Iron Furnace, **Empty Train Station** | Laser Rush, Storm Runner, Gym Hero, Iron Furnace, *Fuego en la Pista* (sad song dropped out) |
+| Acoustic Headbanger | Iron Furnace, then near-ties | Iron Furnace, then near-ties in a different order |
+| Ghost Genre | Velvet After Hours, Concrete Crown, Island Breeze, Night Drive Loop, Dusty Porch Swing | Velvet After Hours, *Dusty Porch Swing*, Island Breeze, *Midnight Bayou Blues*, *Midnight Coding* |
+| Out-of-Range Energy | Moonlit Sonata (3.16) | Moonlit Sonata (**1.84**): the negative-points bug doubled |
+
+**More accurate or just different?** Mostly **just different**, with one improvement and one regression:
+
+- **#1 never changed.** In all 7 profiles, the song that matches genre, mood and energy still wins. The top pick is robust to this weight change.
+- **Improvement:** for High-Energy Pop, the happy indie-pop song (Rooftop Lights) now beats the intense gym track (Gym Hero). That fits a "happy" listener better, and it reduces the genre bias noted earlier.
+- **Regression:** for Sad but Hyped, the only sad song fell out of the top 5. With energy worth twice as much, its mood match can no longer make up for its low energy.
+- **Ranks 3–5 are still near-ties.** They're now decided almost entirely by energy closeness, so the "loud, non-acoustic cluster" problem is stronger.
+
+**Decision:** the baseline weights (genre 2.0, energy 1.0) were restored. The experiment shows that changing weights only reshuffles the middle of the list. The bigger problems (no valence, exact-match moods, small catalog) need new features or data, not different weights.
 
 ---
 

@@ -12,18 +12,54 @@ except ImportError:
 
 # Taste profiles. Keys match the UserProfile dataclass fields in recommender.py.
 PROFILES = {
+    # --- Core profiles ---
     # Default profile: upbeat, energetic pop listener.
-    "Pop / Happy": {
+    "High-Energy Pop": {
         "favorite_genre": "pop",
         "favorite_mood": "happy",
         "target_energy": 0.80,
         "likes_acoustic": False,
     },
     # "Late-night study" listener who wants calm, acoustic, chill lofi.
-    "Lofi / Chill": {
+    "Chill Lofi": {
         "favorite_genre": "lofi",
         "favorite_mood": "chill",
         "target_energy": 0.40,
+        "likes_acoustic": True,
+    },
+    "Deep Intense Rock": {
+        "favorite_genre": "rock",
+        "favorite_mood": "intense",
+        "target_energy": 0.90,
+        "likes_acoustic": False,
+    },
+    # --- Adversarial / edge-case profiles ---
+    # Conflicting: sad mood but very high energy (sad songs in the catalog are calm).
+    "EDGE: Sad but Hyped": {
+        "favorite_genre": "edm",
+        "favorite_mood": "sad",
+        "target_energy": 0.90,
+        "likes_acoustic": False,
+    },
+    # Conflicting: wants metal energy but also acoustic sound.
+    "EDGE: Acoustic Headbanger": {
+        "favorite_genre": "metal",
+        "favorite_mood": "angry",
+        "target_energy": 0.95,
+        "likes_acoustic": True,
+    },
+    # Genre and mood that don't exist in the catalog.
+    "EDGE: Ghost Genre": {
+        "favorite_genre": "k-pop",
+        "favorite_mood": "euphoric",
+        "target_energy": 0.50,
+        "likes_acoustic": False,
+    },
+    # Invalid input: energy outside the 0-1 range.
+    "EDGE: Out-of-Range Energy": {
+        "favorite_genre": "classical",
+        "favorite_mood": "peaceful",
+        "target_energy": 1.50,
         "likes_acoustic": True,
     },
 }
