@@ -11,7 +11,7 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+My version, **VibeMatch 1.0**, is a content-based recommender that runs in the terminal. It loads a 20-song catalog, scores every song against a user's favorite genre, favorite mood, target energy and acoustic preference, and prints the top 5 with the reasons behind each score. I tested it with 7 user profiles, including 4 edge cases designed to trick it, ran a weight-shift experiment, and documented its biases in the [model card](model_card.md).
 
 ---
 
@@ -480,15 +480,14 @@ Profile: High-Energy Pop
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- **Tiny, made-up catalog.** There are only 20 songs, and 12 of the 17 genres have a single song, so most users get at most one genre match.
+- **A "loud song" filter bubble.** After genre matches run out, energy decides the ranking, so high-energy users all get the same cluster of loud songs. Storm Runner appeared in 5 of 7 test profiles.
+- **No happy-vs-dark signal.** Valence isn't scored, so a "sad but hyped" listener gets cheerful songs.
+- **Strict exact matching.** "indie pop" isn't "pop", and "relaxed" isn't "chill".
+- **Silent failures.** Unknown genres get low-confidence results with no warning, and an energy target above 1.0 produces negative points.
+- **No understanding of lyrics, language, vocals or culture.**
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+See section 6 of the [model card](model_card.md) for details.
 
 ---
 
