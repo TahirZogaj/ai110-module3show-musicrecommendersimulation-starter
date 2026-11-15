@@ -21,16 +21,20 @@ Prompts:
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+Think of the recommender as a judge holding a scorecard. The user describes their taste with four answers: their favorite genre, their favorite mood, how energetic they want the music to be (on a scale from 0 to 1), and whether they like acoustic sounds.
 
-Prompts:  
+The judge then looks at every song in the catalog, one at a time, and hands out points:
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+- **Same genre as the user's favorite:** 2 points. This is the biggest reward, because genre is the clearest sign of "this is my kind of music."
+- **Same mood as the user's favorite:** 1 point.
+- **Energy close to what the user wants:** up to 1 point. A perfect match earns the full point, and the further away the song's energy is, the fewer points it gets. A calm-music fan isn't rewarded for loud songs just because they are loud; what matters is being *close* to the target.
+- **Acoustic sound that fits the user's preference:** up to half a point. If the user likes acoustic music, more acoustic songs earn more; if not, less acoustic songs earn more.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+A perfect song scores 4.5. While handing out points, the judge also writes down *why* (for example, "genre match +2.0"), so every recommendation comes with an explanation.
+
+Once every song has a score, the songs are lined up from highest to lowest, and the top five become the recommendations.
+
+**Changes from the starter logic:** the starter code returned the first few songs in the file without judging them. I added the point system above, the energy-closeness rule, the acoustic preference, and the written reasons. Tempo, danceability and valence are loaded but not scored: in this dataset tempo and danceability rise and fall with energy, so counting them would reward the same thing several times.
 
 ---
 
