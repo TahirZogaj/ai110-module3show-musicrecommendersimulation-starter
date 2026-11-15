@@ -155,10 +155,8 @@ Shared songs are the songs that appear in both profiles' top 5.
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+**What I learned about recommender systems:** I learned that a recommender is really two steps: a scoring rule that judges one song at a time, and a ranking rule that sorts all the scores and keeps the top few. I also learned that *how* you measure matters. Scoring songs by "closeness to the user's target energy" works much better than "higher energy is better", which would always push the loudest songs. The data shapes the results as much as the code: 12 of my 17 genres had only one song, so the system ran out of genre matches quickly and fell back on energy.
 
-Prompts:  
+**Something unexpected I discovered:** Two very different listeners, a "Deep Intense Rock" fan and an "Acoustic Headbanger" who said they like acoustic music, got the exact same five songs. The acoustic preference barely mattered, because no loud song in my catalog is acoustic. I was also surprised that Storm Runner showed up in the top 5 for 5 of my 7 test profiles. I first assumed the genre weight was too strong, but the real cause was a cluster of loud songs in the data. And even though the system is only about 20 lines of addition and subtraction, the Chill Lofi results looked like a real study playlist.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+**How this changed the way I think about music apps:** When Spotify or YouTube keeps recommending the same kind of song, it may not be because I love it. It may be because of how the scores are weighted or what's missing from the data. My system never said "I don't know"; it gave a k-pop fan five confident-looking picks that didn't match anything. Small choices like "genre is worth 2 points" decide what people get exposed to, and users never see those choices.
