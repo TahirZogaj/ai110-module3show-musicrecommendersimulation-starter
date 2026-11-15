@@ -497,10 +497,13 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+How recommenders turn data into predictions
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Building this project showed me that a recommender doesn't "understand" music. It turns each song into numbers and labels (genre, mood, energy, acousticness) and compares them to what the user says they like. My system gives points for each match: 2 for genre, 1 for mood, up to 1 for how close the energy is, and up to 0.5 for acoustic fit. Then it sorts every song by its total and shows the top five. The "prediction" is really a guess that a song with a high score is one the user will enjoy. I was surprised how convincing that felt: with only a few rules, my Chill Lofi profile got a list that looked like a real study playlist, and the printed reasons made each pick feel thoughtful.
+
+Where bias or unfairness can show up
+
+I also saw how easily bias slips in, even without anyone meaning it. Since 12 of my 17 genres had only one song, most users got at most one genre match, and the rest of their list was filled by whichever songs had the closest energy. That created a "loud song" bubble: Storm Runner appeared in 5 of my 7 test profiles. Users with less common tastes were treated worse. A "sad but hyped" listener got cheerful songs, because my system doesn't measure how happy or dark a song sounds. A k-pop fan got five confident-looking picks that matched nothing, with no warning. Even the choice to make genre worth twice as much as mood meant a happy-pop fan got an intense gym song ranked above a happy indie-pop song. In a real app with millions of songs and users, choices like these decide which artists get heard and which listeners get good recommendations, so the weights and the data need to be checked as carefully as the code.
 
 
 
